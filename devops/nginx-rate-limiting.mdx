@@ -1,0 +1,111 @@
+---
+title: Nginx Rate Limit
+description: Learn how to do rate limit via Nginx.
+---
+
+Rate limiting can be implemented in two primary ways: directly in your application's server code, or at the infrastructure level on the machine where your server is running.
+
+In this tutorial, we will learn how to do rate limit via Nginx.
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/TfZlXBHtyzE"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+  style={{ margin: '1.5rem 0' }}
+></iframe>
+
+## Prerequisites
+
+Before going forward, make sure you have the following prerequisites:
+
+- A server with root access
+- A domain name or IP address
+- A web server that can be used to serve static files
+- Nginx installed and configured on the machine
+
+## Adding Rate Limiting
+
+Nginx provides a simple way to add rate limiting using the `limit_req_zone` and `limit_req` directives.
+
+<Steps>
+  <Step title="Edit the main configuration file to define a rate limit zone">
+    ```bash
+    sudo vim /etc/nginx/nginx.conf
+    ```
+  </Step>
+
+  <Step title="Add the following to the http block">
+    ```nginx
+    http {
+      limit_req_zone $binary_remote_addr zone=mylimit:10m rate=2r/s;
+
+      ...
+    }
+    ```
+
+    The directive `limit_req_zone` is used in Nginx to define a shared memory zone that will be used to store the state of rate limits for incoming requests. Here's a breakdown of the specific directive you provided:
+
+    ```nginx
+    limit_req_zone $binary_remote_addr zone=mylimit:10m rate=2r/s;
+    ```
+
+    - **`$binary_remote_addr`**: This is a variable that holds the client's IP address in a binary format. Using the binary format saves memory, which is important when dealing with large numbers of requests.
+    - **`zone=mylimit:10m`**: This specifies the name and size of the shared memory zone used to store the state of rate limits.
+      - `mylimit` is the name of the zone.
+      - `10m` means that the size of the zone is 10 megabytes. This size dictates how many IP addresses and their request states can be stored in memory. A 10MB zone can typically store about 160,000 states (given that each state takes about 64 bytes).
+    - **`rate=2r/s`**: This sets the request rate limit.
+      - `2r/s` means that each IP address is allowed to make 2 requests per second.
+
+    When you configure `limit_req_zone` in your Nginx configuration, it sets up a system to control how many requests a client can make to your server in a given time frame. This can help protect your server from being overwhelmed by too many requests from a single client, which can be a form of denial-of-service attack.
+  </Step>
+
+  <Step title="Edit your server block configuration to apply the rate limit">
+    ```bash
+    sudo vim /etc/nginx/sites-available/default
+    ```
+  </Step>
+
+  <Step title="Add the following inside the server block">
+    ```nginx
+    server {
+      ...
+
+      location / {
+        limit_req zone=mylimit burst=20 nodelay;
+        try_files $uri $uri/ =404;
+      }
+
+      ...
+    }
+    ```
+
+    above code applies the rate limiting defined by the `mylimit` zone.
+
+    - `burst=20` allows a burst of up to 20 requests beyond the defined rate. **So, even if the rate limit is set to 2 requests per second, the burst allows up to 20 requests to be made in a second. The requests exceeding the rate limit will be rejected immediately.**
+    - `nodelay` means that requests that exceed the rate limit should be rejected immediately rather than delayed.
+  </Step>
+
+  <Step title="Test and reload Nginx">
+    ```bash
+    sudo nginx -t
+    sudo systemctl reload nginx
+    ```
+  </Step>
+</Steps>
+
+## Summary
+
+In this tutorial, we have learned how to do rate limit via Nginx.
+
+## References
+
+- [Nginx ngx_http_limit_req_module Documentation](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html)
+- [Rate Limiting with NGINX and NGINX Plus](https://blog.nginx.org/blog/rate-limiting-nginx)
+
+<Card title="Next: Setup SSL for Nginx" icon="arrow-right" href="/devops/nginx-ssl-setup">
+  Continue your journey by learning how to set up SSL for Nginx on Ubuntu.
+</Card>

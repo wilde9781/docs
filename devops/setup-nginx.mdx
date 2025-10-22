@@ -1,0 +1,161 @@
+---
+title: Nginx Configuration on VPS
+description: Learn how to install and configure Nginx on your server.
+---
+
+Nginx is a popular open-source web server that can be used to serve static files, dynamic content, and proxy requests to other servers. It is known for its high performance, scalability, and security.
+
+In this tutorial, we will learn how to install and configure Nginx on any VPS.
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/pFzMjMsVIzs"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+  style={{ margin: '1.5rem 0' }}
+></iframe>
+
+## Prerequisites
+
+Before installing Nginx, make sure you have the following prerequisites:
+
+- A server with root access
+- A domain name or IP address
+- A web server that can be used to serve static files
+
+## Installing Nginx on Ubuntu
+
+To install Nginx on Ubuntu, follow these steps:
+
+<Steps>
+  <Step title="Update the package index">
+    ```bash
+    sudo apt update
+    ```
+  </Step>
+
+  <Step title="Install Nginx">
+    ```bash
+    sudo apt install nginx
+    ```
+  </Step>
+
+  <Step title="Start and enable Nginx">
+    ```bash
+    sudo systemctl start nginx
+    sudo systemctl enable nginx
+    ```
+  </Step>
+
+  <Step title="Verify installation">
+    Open your web browser and navigate to `http://your_server_ip`. You should see the Nginx default welcome page.
+  </Step>
+</Steps>
+
+## Configuring Nginx on Ubuntu
+
+<Steps>
+  <Step title="Create a new server block configuration file">
+    ```bash
+    sudo vim /etc/nginx/sites-available/default
+    ```
+    _This command opens the default configuration file for editing._
+  </Step>
+
+  <Step title="Replace the file content with the following content">
+    ```nginx
+    server {
+      listen 80;  # Listen on port 80, the default HTTP port
+      server_name localhost;  # The server name, here it is set to localhost
+
+      root /var/www/html;  # The root directory where files are served from
+      index index.html index.htm;  # The default files to serve
+
+      location / {
+        try_files $uri $uri/ =404;  # Try to serve the requested URI, if not found return a 404
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Create the document root directory if it doesn't exist">
+    ```bash
+    sudo mkdir -p /var/www/html
+    ```
+  </Step>
+
+  <Step title="Change ownership of the document root directory to the current user">
+    ```bash
+    sudo chown -R $USER:$USER /var/www/html
+    ```
+  </Step>
+
+  <Step title="Set the permissions for the document root directory">
+    ```bash
+    sudo chmod -R 755 /var/www/html
+    ```
+  </Step>
+
+  <Step title="Create the directory for the web root">
+    ```bash
+    cd /var/www/html
+    ```
+    _This command navigates to the web root directory._
+  </Step>
+
+  <Step title="Create an empty index.html file">
+    ```bash
+    touch index.html
+    ```
+    _This command creates an empty index.html file._
+  </Step>
+
+  <Step title="Open the index.html file for editing">
+    ```bash
+    sudo vim index.html
+    ```
+    _This command opens the index.html file for editing._
+  </Step>
+
+  <Step title="Add the following content to the index.html file">
+    ```html
+    <html>
+      <head>
+        <title>Welcome to Nginx</title>
+      </head>
+      <body>
+        <h1>Hello, world!</h1>
+      </body>
+    </html>
+    ```
+  </Step>
+
+  <Step title="Test the Nginx configuration">
+    ```bash
+    sudo nginx -t
+    ```
+    _This command tests the Nginx configuration for syntax errors._
+  </Step>
+
+  <Step title="Reload Nginx to apply the changes">
+    ```bash
+    sudo systemctl reload nginx
+    ```
+    _This command reloads the Nginx service to apply the changes._
+  </Step>
+
+  <Step title="Verify the configuration">
+    Open your web browser and navigate to `URL_ADDRESS_server_ip`. You should see the Nginx default welcome page.
+  </Step>
+</Steps>
+
+## Summary
+
+In this tutorial, we learned how to install and configure Nginx to serve static files.
+
+<Card title="Next: Nginx Rate Limiting" icon="arrow-right" href="/devops/nginx-rate-limiting">
+  Continue your journey by learning how to implement rate limiting with Nginx.
+</Card>

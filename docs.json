@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "maple",
+  "name": "ChaiDocs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#C45F15",
+    "light": "#E67E22",
+    "dark": "#8B4513"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/logo/cup-logo.png",
   "navigation": {
     "tabs": [
       {
@@ -18,31 +18,45 @@
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "learning"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Chai aur Git",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "git/welcome",
+              "git/introduction",
+              "git/terminology",
+              "git/behind-the-scenes",
+              "git/branches",
+              "git/diff-stash-tags",
+              "git/managing-history",
+              "git/github"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Chai aur DevOps",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "devops/welcome",
+              "devops/setup-vpc",
+              "devops/setup-nginx",
+              "devops/nginx-rate-limiting",
+              "devops/nginx-ssl-setup",
+              "devops/node-nginx-vps",
+              "devops/postgresql-docker",
+              "devops/postgresql-vps",
+              "devops/node-logger"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "tab": "Tech Shots",
+        "groups": [
           {
-            "group": "AI tools",
+            "group": "Quick Guides",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "tech-shots/yaml-complete"
             ]
           }
         ]
@@ -71,33 +85,33 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "YouTube Channel",
+          "href": "https://www.youtube.com/@chaiaurcode",
+          "icon": "youtube"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Udemy Courses",
+          "href": "https://www.udemy.com/user/hitesh-choudharycom/",
+          "icon": "graduation-cap"
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/chaicode-black.png",
+    "dark": "/logo/chaicode-white.png"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "YouTube",
+        "href": "https://www.youtube.com/@chaiaurcode"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Udemy Courses",
+      "href": "https://www.udemy.com/user/hitesh-choudharycom/"
     }
   },
   "contextual": {
@@ -114,9 +128,10 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/Hiteshdotcom",
+      "github": "https://github.com/hiteshchoudhary",
+      "youtube": "https://www.youtube.com/@chaiaurcode",
+      "linkedin": "https://linkedin.com/in/hiteshchoudhary"
     }
   }
 }

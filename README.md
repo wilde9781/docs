@@ -1,43 +1,58 @@
-# Mintlify Starter Kit
+# Chai aur Code Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Welcome to the Chai aur Code documentation repository - where we learn programming over a cup of chai!
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+This repository contains comprehensive documentation for learning web development, backend systems, and modern programming practices. Built for developers who want to master coding with clear, practical examples.
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+## What's Inside
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+- **Learning Guides** - Step-by-step tutorials for mastering programming
+- **AI Tools Integration** - Cursor, Claude Code, and Windsurf documentation
+- **API Development** - Complete guides for building backend systems
+- **Best Practices** - Industry-standard coding patterns and practices
+- **Project Examples** - Real-world code samples and projects
 
-## Development
+**[Start Learning Now](https://www.youtube.com/@chaiaurcode)**
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+## Local Development
 
-```
+Want to contribute or run these docs locally? Follow these steps:
+
+### Prerequisites
+Install the [Mintlify CLI](https://www.npmjs.com/package/mint):
+
+```bash
 npm i -g mint
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+### Running Locally
+Navigate to the documentation directory and start the dev server:
 
-```
+```bash
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+Visit `http://localhost:3000` to see your changes in real-time.
 
-## Publishing changes
+## Contributing
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+We welcome contributions from the community! Feel free to:
+- Fix typos or improve documentation clarity
+- Add new examples and tutorials
+- Suggest improvements to existing content
 
-## Need help?
+## Join the Community
 
-### Troubleshooting
+- **YouTube**: [Chai aur Code](https://www.youtube.com/@chaiaurcode)
+- **Website**: [chaicode.com](https://chaicode.com)
+- **Twitter**: [@Hiteshdotcom](https://x.com/Hiteshdotcom)
+- **GitHub**: [@hiteshchoudhary](https://github.com/hiteshchoudhary)
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+## Troubleshooting
 
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+- **Dev server not running?** Try `mint update` to get the latest CLI version
+- **404 errors?** Ensure you're in a directory with a valid `docs.json` file
+
+---
+
+Made with chai by the Chai aur Code community

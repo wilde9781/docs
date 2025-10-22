@@ -1,0 +1,135 @@
+---
+title: Setting Up PostgreSQL On VPS
+description: Learn how to set up PostgreSQL on a VPS.
+---
+
+PostgreSQL is a powerful, open-source object-relational database system. It is a highly scalable, SQL-compliant database management system that is used to handle large workloads. PostgreSQL is a popular choice for many developers and organizations due to its robust features, extensibility, and reliability.
+
+In this tutorial, we will walk you through the process of setting up PostgreSQL on Ubuntu on a VPS.
+
+## Install PostgreSQL
+
+```bash
+sudo apt update
+sudo apt install postgresql
+sudo service postgresql start # start the service
+```
+
+## Check PostgreSQL is running
+
+```bash
+sudo service postgresql status
+```
+
+Make sure the service is running
+
+## Use psql to connect to the database
+
+```bash
+sudo -u postgres psql
+```
+
+This will open a CLI where you can run SQL commands.
+
+After first launching psql, you may check the details of your connection by typing `\conninfo` into the interpreter.
+
+```bash
+postgres=# \conninfo
+Connection to database "postgres" by user "postgres".
+  Host: localhost
+  Port: 5432
+  Username: postgres
+  Database: postgres
+  SSL off
+```
+
+## List databases
+
+```bash
+postgres=# \l
+                                  List of databases
+    Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
+  ----------+----------+----------+------------+------------+-----------------------
+  postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+  template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+            |          |          |            |            | postgres=CTc/postgres
+  template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+            |          |          |            |            | postgres=CTc/postgres
+
+  (3 rows)
+```
+
+## Create a database
+
+```bash
+postgres=# CREATE DATABASE mydb;
+CREATE DATABASE
+```
+
+## List databases
+
+```bash
+postgres=# \l
+                                List of databases
+     Name   |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
+  ----------+----------+----------+------------+------------+-----------------------
+  mydb      | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+  postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+  template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+            |          |          |            |            | postgres=CTc/postgres
+  template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+            |          |          |            |            | postgres=CTc/postgres
+
+  (4 rows)
+```
+
+## List tables
+
+```bash
+postgres=# \dt
+
+          List of relations
+  Schema | Name | Type  |  Owner
+  -------+------+-------+----------
+  public | foo  | table | postgres
+  public | bar  | table | postgres
+
+  (2 rows)
+```
+
+## Setup PostgreSQL server
+
+Open the file `/etc/postgresql/<version>/main/postgresql.conf` and add the following lines:
+
+```
+listen_addresses = '*'
+```
+
+This will allow connections from any IP address. This is not recommended for production environments.
+
+## Connection Settings
+
+Add the following lines in `/etc/postgresql/<version>/main/pg_hba.conf`:
+
+```nginx
+# Allow connections from any IP address
+host    all             all             0.0.0.0/0               md5
+```
+
+## Restart the PostgreSQL server:
+
+```bash
+sudo service postgresql restart
+# or
+sudo systemctl restart postgresql
+```
+
+This server will be accessible at `localhost:5432` if your backend server is running on the same machine. If you are running the backend server on a different machine, you will need to configure the `host` and `port` settings in the `.env` file.
+
+## Summary
+
+In this tutorial, we have learned how to set up PostgreSQL on Ubuntu on a VPS. We have also learned how to create a database, list tables and configure connection settings.
+
+<Card title="Next: Advanced Node.js Logging" icon="arrow-right" href="/devops/node-logger">
+  Continue your journey by learning how to master Winston and Morgan for production logging.
+</Card>

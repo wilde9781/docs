@@ -1,0 +1,136 @@
+---
+title: Setting Up PostgreSQL with Docker
+description: A comprehensive guide to installing and configuring PostgreSQL using Docker containers
+---
+
+PostgreSQL is a powerful, open-source object-relational database system. It is a highly scalable, SQL-compliant database management system that is used to handle large workloads. PostgreSQL is a popular choice for many developers and organizations due to its robust features, extensibility, and reliability.
+
+In this tutorial, we will walk you through the process of setting up PostgreSQL on your system. In this modern age, you can take advantage of Docker to easily set up and run PostgreSQL on your local machine. Docker is a platform that allows you to package, distribute, and run applications in containers. It provides a lightweight and efficient way to run applications in isolated environments. Docker is available for Windows, macOS, and Linux, making it a versatile tool for developers.
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/EhapnaEKl-w"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+  style={{ margin: '1.5rem 0' }}
+></iframe>
+
+## Prerequisites
+
+Before you begin, you will need to have the following prerequisites:
+
+- A system running Windows, macOS, or Linux
+- Docker installed on your system
+- Basic knowledge of using the command line
+
+## Installing Docker
+
+If you don't have Docker installed on your system, you can download and install it from the official [Docker website](https://docs.docker.com/get-started/get-docker/). Follow the instructions provided on the website to install Docker on your system.
+
+Once the docker is installed, you can verify the installation by running the following command in your terminal:
+
+```bash
+docker --version
+```
+
+This command will display the version of Docker installed on your system.
+
+## Create Storage Directory
+
+Now that you have Docker installed, create a new directory for your PostgreSQL data. This directory will be used to store the data files for your PostgreSQL instance. I usually keep this directory in my project folder so that it is easy to manage.
+
+## Docker Compose File
+
+Now, create a new file named `compose.yml` in the same directory. This file will contain the configuration for your PostgreSQL container.
+
+Insert the following content into the `compose.yml` file:
+
+```yml
+// compose.yml
+services:
+  db:
+    image: postgres:alpine
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432  # make sure you don't have another container running on DB_PORT
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${DB_NAME} -U $${DB_USER}"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    attach: false
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+```
+
+In this configuration file, we define two services: `db` and `adminer`. The `db` service is responsible for running the PostgreSQL instance, while the `adminer` service is responsible for running the [**Adminer**](https://www.adminer.org/en/) web interface. It is a lightweight database management tool that allows you to interact with your databases through a web interface.
+
+The `db` service uses the `postgres` image from the Docker Hub registry. We specify the volume mapping to store the data files in the `./data/db` directory. The `ports` section maps the container port `5432` to the host port `5432`, allowing you to access the PostgreSQL instance from your local machine.
+
+We also set the environment variables `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` to configure the database name, username, and password, respectively.
+
+The `adminer` service uses the `adminer` image from the Docker Hub registry. We map the container port `8080` to the host port `8080` to access the [**Adminer**](https://www.adminer.org/en/) web interface.
+
+## Environment Variables
+
+To configure the database name, username, and password, you can create a `.env` file in the same directory as the `compose.yml` file. Add the following content to the `.env` file:
+
+```nginx
+// .env
+DB_NAME=chai-db
+DB_USER=chaicode
+DB_PASSWORD=chaiaurcode
+DB_PORT=5432
+```
+
+Replace the values of `DB_NAME`, `DB_USER`, and `DB_PASSWORD` with your desired database name, username, and password, respectively.
+
+## Start the PostgreSQL Container
+
+Now that you have created the `compose.yml` file, you can start the PostgreSQL container by running the following command in the terminal:
+
+```bash
+docker compose up -d
+```
+
+This command will download the necessary images and start the PostgreSQL and Adminer containers in the background. You can verify that the containers are running by executing the following command:
+
+```bash
+docker ps
+```
+
+This command will display a list of running containers on your system. You should see the `db` and `adminer` containers listed in the output.
+
+You can now access the Adminer web interface by opening a web browser and navigating to `http://localhost:8080`. In the login page, enter the database name, username, and password that you specified in the `compose.yml` file. You should now be able to interact with your PostgreSQL database through the [**Adminer**](https://www.adminer.org/en/) web interface.
+
+## Connect with PostgreSQL
+
+If you want to connect with database url, you can use the following url:
+
+```
+postgresql://chaicode:chaiaurcode@localhost:5432/chai-db
+```
+
+That's it! You have successfully set up PostgreSQL using Docker on your system. You can now start developing applications that use PostgreSQL as the backend database.
+
+## Summary
+
+In this tutorial, we have learned how to set up PostgreSQL using Docker on your system. We have also learned how to connect with the database using the Adminer web interface.
+
+<Card title="Next: Setting Up PostgreSQL On VPS" icon="arrow-right" href="/devops/postgresql-vps">
+  Continue your journey by learning how to set up PostgreSQL on a VPS.
+</Card>

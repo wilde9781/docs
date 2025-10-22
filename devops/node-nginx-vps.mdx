@@ -1,0 +1,154 @@
+---
+title: Deploy Node API with Nginx
+description: Learn how to deploy a Node API with Nginx on Ubuntu server.
+---
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/C8nr_yiQXNU"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+  style={{ margin: '1.5rem 0' }}
+></iframe>
+
+## Prerequisites
+
+Before going forward, make sure you have the following prerequisites:
+
+- A server with root access
+- A domain name or IP address
+- A web server that can be used to serve static files
+- Nginx installed and configured on the machine
+- SSL configured for the domain name or IP address
+
+## Create a Small Express App
+
+We will create a small express app to test the deployment. Here are the steps:
+
+<Steps>
+  <Step title="Install nodejs and npm on ubuntu">
+    ```bash
+    sudo apt install nodejs
+    sudo apt install npm
+    ```
+  </Step>
+
+  <Step title="Create a project dir and initialize a node app">
+    ```bash
+    mkdir express-app
+    cd express-app
+    npm init -y
+    ```
+  </Step>
+
+  <Step title="Install basic dependencies">
+    ```bash
+    npm install express nodemon
+    ```
+  </Step>
+
+  <Step title="Update the package.json">
+    ```json
+    {
+      "name": "express-app",
+      "version": "1.0.0",
+      "description": "",
+      "main": "index.js",
+      "type": "module",
+      "scripts": {
+        "dev": "nodemon index.js"
+      },
+      "keywords": [],
+      "author": "",
+      "license": "ISC",
+      "dependencies": {
+        "express": "^4.19.2",
+        "nodemon": "^3.1.4"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Create an index.js file and add the following code">
+    ```bash
+    touch index.js
+    ```
+    ```js
+    import express from "express";
+    const app = express();
+    app.get("/api", (req, res) => {
+      return res.status(200).json({
+        message: "server working",
+      });
+    });
+    app.listen(8080, () => console.log("Server is running on 8080"));
+    ```
+  </Step>
+
+  <Step title="Install pm2 to run this dummy app in the background">
+    ```bash
+    npm install -g pm2 # if npm is not available use sudo npm install -g pm2
+    ```
+  </Step>
+
+  <Step title="Run the application with the following command">
+    ```bash
+    pm2 start "npm run dev"
+    ```
+    This will start the application on port `8080`.
+  </Step>
+</Steps>
+
+## Do a reverse proxy with nginx
+
+Nginx can also act as a reverse proxy, forwarding client requests to other servers. Here are the steps to configure Nginx as a reverse proxy:
+
+<Steps>
+  <Step title="Edit your server block configuration">
+    ```bash
+    sudo vim /etc/nginx/sites-available/default
+    ```
+  </Step>
+
+  <Step title="Configure the server block to act as a reverse proxy">
+    ```nginx
+    server {
+      listen 80;  # Listen on port 80 for incoming HTTP requests
+      server_name localhost;  # Server name or domain name this block will respond to
+
+      location / {
+        proxy_pass http://127.0.0.1:8080;  # Proxy requests to the backend server running on localhost:8080
+        proxy_set_header Host $host;  # Set the Host header to the client's original host
+        proxy_set_header X-Real-IP $remote_addr;  # Set the X-Real-IP header to the client's IP address
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  # Append client's IP addresses to X-Forwarded-For header
+        proxy_set_header X-Forwarded-Proto $scheme;  # Set the X-Forwarded-Proto header to the client's protocol (http or https)
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Test and reload Nginx">
+    ```bash
+    sudo nginx -t
+    sudo systemctl reload nginx
+    ```
+  </Step>
+
+  <Step title="Verify the configuration">
+    Now, when you request `http://<server_ip>/api` it will return the following response:
+    ```json
+    { "message": "server working" }
+    ```
+  </Step>
+</Steps>
+
+## Summary
+
+In this guide, we learned how to deploy a Node API with Nginx on Ubuntu server. We also learned how to configure Nginx as a reverse proxy.
+
+<Card title="Next: Setting Up PostgreSQL with Docker" icon="arrow-right" href="/devops/postgresql-docker">
+  Continue your journey by learning how to set up PostgreSQL using Docker containers.
+</Card>

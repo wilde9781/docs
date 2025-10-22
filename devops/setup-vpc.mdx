@@ -1,0 +1,215 @@
+---
+title: Setting up VPC for deployment
+description: Learn how to setup VPC for deployment.
+---
+
+In this tutorial, we will learn how to set up a server for hosting. We will cover topics such as server selection, server configuration, and server hardening.
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/uJgy7_jcp0Y"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+  style={{ margin: '1.5rem 0' }}
+></iframe>
+
+## Server Selection
+
+Before setting up a server, it's important to choose the right server for your needs. There are several factors to consider when selecting a server, including:
+
+- Budget: Determine how much you can afford to spend on a server.
+- Purpose: Decide what you want to use the server for, such as hosting a website, running a business, or running a development environment.
+- Location: Choose a server that is close to your users and has good connectivity.
+- Security: Ensure that the server is secure and protected against potential threats.
+
+## Server Configuration
+
+Once you have chosen a server, you need to configure it properly. This involves setting up the server's operating system, configuring the server's network settings, and setting up any necessary software or applications.
+
+## OS Configuration
+
+The first step in configuring a server is to set up the operating system. This involves installing the operating system and any necessary software packages. Here are some steps to follow:
+
+<Steps>
+  <Step title="Choose an operating system">
+    Select an operating system that is compatible with your needs and budget. Some popular options include Ubuntu, CentOS, and Debian.
+  </Step>
+
+  <Step title="Update the operating system">
+    Use a package manager like `apt` or `yum` to update the operating system on the server.
+  </Step>
+
+  <Step title="Configure the network settings">
+    Set up the network settings, such as IP address, subnet mask, and gateway, to ensure that the server can communicate with other devices on the network.
+  </Step>
+
+  <Step title="Install any necessary software">
+    Install any necessary software packages, such as web servers, database servers, or development tools, on the server.
+  </Step>
+</Steps>
+
+## Get an account on any cloud provider
+
+We will use [Linode](https://www.linode.com/) as our cloud provider. [Linode](https://www.linode.com/) is a cloud hosting provider that offers a wide range of virtual private servers (VPS) with varying configurations and prices. It is a popular choice for hosting web applications and other types of software.
+
+Once the account is created, you can choose the plan that best suits your needs. The plan will determine the number of servers you can create, the amount of storage space available, and the price per month.
+
+Once the machine is created and up and running, you can connect to it using your terminal, in my case I am using [warp](https://www.warp.dev/) terminal. You can use [warp](https://www.warp.dev/) to connect to your machine and manage it remotely.
+
+```bash
+ssh root@192.IP.IP.IP
+```
+
+Now we are inside our machine and we can start installing the necessary packages and software but before that let's upgrade our system.
+
+```bash
+apt update
+apt upgrade
+apt update
+```
+
+Always run the `apt update` command before `apt upgrade` to ensure that you have the latest packages available.
+
+## Change password (optional)
+
+Although most cloud providers offer a way to change the password of your machine directly from the control panel but in case you want to do it manually, you can use the following command:
+
+```bash
+passwd
+```
+
+This will prompt you to enter your current password and then you will be prompted to enter a new password. Once you have entered the new password, you will be prompted to confirm it. After that, the password will be changed.
+
+## Add Non-root User
+
+To add a non-root user, you can use the following command:
+
+```bash
+useradd -m -s /bin/bash username
+groups username
+```
+
+This will create a new user with the specified username and you can check the groups of the user using the `groups` command. After that, you can add the user to the sudoers group using the following command:
+
+```bash
+usermod -aG sudo username
+```
+
+This will add the user to the sudoers group, giving them the ability to run commands with sudo privileges. Now lets create a password for the user:
+
+```bash
+sudo passwd username
+```
+
+This will prompt you to enter a new password for the user. After that, you can log in as the user using the following command:
+
+```bash
+ssh username@192.IP.IP.IP
+```
+
+Finally, logged in as the user.
+
+## Connect to the server using SSH
+
+Setting up SSH key on your machine is fairly easy and you need to do it once. You can generate it once as your machine identification and then you can use it to connect to the server. Here is a link to the [official documentation](https://www.linode.com/docs/guides/use-public-key-authentication-with-ssh/?tabs=ed25519-recommended%2Cssh-add%2Cusing-ssh-copy-id-recommended) on how to generate SSH keys on Linux and MacOS.
+
+Here are some simple steps to follow:
+
+```bash
+ssh-keygen -t ed25519 -C "user@domain.tld"
+```
+
+to view the public key
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+Once you have generated the SSH keys, you can add them to your server using the following command (assuming you have copied the public key to your clipboard):
+
+On your server, run the following command to copy the public key to the server. Create a new directory called `.ssh` in your home directory if it doesn't already exist. Then create a new file called `authorized_keys` in the `.ssh` directory and paste the public key into the file.
+
+```bash
+nano ~/.ssh/authorized_keys
+```
+
+Paste the public key into the file.
+
+add it to the ssh utility
+
+```bash
+ssh-add -k ~/.ssh/id_ed25519
+```
+
+## Disable password login
+
+After this, no one will be able to log in to your server using the username and password. Be careful with this.
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Open this file in nano editor and search for `PasswordAuthentication` and change it to `no`. Optionally, you can also change the `PermitRootLogin` to `no` to prevent root user from logging in.
+
+Now, restart the ssh service using the following command:
+
+```bash
+sudo service ssh restart
+```
+
+## Firewall Configuration
+
+You can install firewall package to protect your server from external attacks. In my case I will use linode firewall that I can easily configure from the control panel. Some people prefer to use ufw (Uncomplicated Firewall) which is a simple and easy to use firewall.
+
+To install ufw, run the following command:
+
+```bash
+sudo apt install ufw
+```
+
+Once the package is installed, you can configure the firewall using the following command:
+
+```bash
+sudo ufw status
+```
+
+This will show the current status of the firewall. To enable the firewall, run the following command:
+
+```bash
+sudo ufw enable
+```
+
+This will enable the firewall and allow all incoming and outgoing traffic. To allow incoming traffic on a specific port, run the following command:
+
+```bash
+sudo ufw allow <port>
+```
+
+For example, to allow incoming traffic on port 22, run the following command:
+
+```bash
+sudo ufw allow 22
+```
+
+To allow incoming traffic on multiple ports, run the following command:
+
+```bash
+sudo ufw allow <port1>,<port2>,<port3>
+```
+
+For example, to allow incoming traffic on ports 22, 80, and 443, run the following command:
+
+```bash
+sudo ufw allow 22,80,443
+```
+
+## Summary
+
+In this tutorial, we have learned how to set up a server for hosting. We have covered topics such as server selection, server configuration, and server hardening.
+
+<Card title="Next: Nginx Configuration" icon="arrow-right" href="/devops/setup-nginx">
+  Continue your journey by learning how to install and configure Nginx on your server.
+</Card>

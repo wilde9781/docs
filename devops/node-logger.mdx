@@ -1,0 +1,111 @@
+---
+title: Advanced Node.js Logging
+description: Master Winston and Morgan - Essential Node.js Logging Libraries for Production Applications
+---
+
+Node Logger is a powerful tool that allows you to log messages to the console, file, or other destinations. It provides a simple and flexible API for logging messages, making it easy to debug and monitor your Node.js applications. Console logs are great for quick debugging, but they can be difficult to manage and analyze.
+
+This guide has been carefully curated as a comprehensive reference for the "**Advance logging with morgan and winston**" section in the [Complete Web Dev Course on Udemy](https://www.udemy.com/course/web-dev-master/) course. For the best learning experience, we recommend following these docs alongside our video lectures.
+
+<a href="https://hitesh.ai/udemy" style={{ display: 'block', marginTop: '1.5rem', marginBottom: '2rem', maxWidth: '800px', marginInline: 'auto', borderRadius: '10px', overflow: 'hidden' }}>
+  <img src="https://wajeshubham-portfolio.s3.ap-south-1.amazonaws.com/udemy.jpeg" alt="udemy" />
+</a>
+
+> This is my personal configuration for Winston logger. You can use it as a reference.
+
+## Installation
+
+To install Winston, you can use the following command:
+
+```bash
+npm install winston morgan
+```
+
+This will install the `winston` and `morgan` packages, which are used to configure and use the Winston logger.
+
+## Configuration
+
+To configure Winston, you can create a new file called `logger.js` in the root directory of your project and add the following code:
+
+```js
+// logger.js
+import {createLogger, format, transports} from "winston";
+const {combine, timestamp, json, colorize} = format;
+
+// Custom format for console logging with colors
+const consoleLogFormat = format.combine(
+  format.colorize(),
+  format.printf(({ level, message, timestamp }) => {
+    return `${level}: ${message}`;
+  })
+);
+
+// Create a Winston logger
+const logger = createLogger({
+  level: "info",
+  format: combine(colorize(), timestamp(), json()),
+  transports: [
+    new transports.Console({
+      format: consoleLogFormat,
+    }),
+    new transports.File({ filename: "app.log" }),
+  ],
+});
+
+export default logger;
+```
+
+This code configures Winston to log messages to the console and a file called `app.log`. It also sets the log level to `info` and uses the `colorize` and `timestamp` formatters to add colors and timestamps to the console logs.
+
+## Usage
+
+To use the Winston logger, you can import it in your code and use it as follows:
+
+First go to your index.js file and add the following code:
+
+```js
+// index.js
+import logger from "./logger";
+import morgan from "morgan";
+
+const morganFormat = ":method :url :status :response-time ms";
+
+app.use(
+  morgan(morganFormat, {
+    stream: {
+      write: (message) => {
+        const logObject = {
+          method: message.split(" ")[0],
+          url: message.split(" ")[1],
+          status: message.split(" ")[2],
+          responseTime: message.split(" ")[3],
+        };
+        logger.info(JSON.stringify(logObject));
+      },
+    },
+  })
+);
+```
+
+This will log the messages to the console and the file `app.log`. The `morgan` package is used to format the log messages and the `stream` option is used to write the log messages to the console.
+
+## Easy log messages
+
+To use the Winston logger, you can import it in your code and use it as follows:
+
+```javascript
+import logger from "./logger";
+
+logger.info("This is an info message");
+logger.error("This is an error message");
+logger.warn("This is a warning message");
+logger.debug("This is a debug message");
+```
+
+This will log the messages to the console and the file `app.log`.
+
+## Summary
+
+In this tutorial, we have learned how to use the advanced Node Logger such as Winston and morgan. We have also learned how to configure and use the Winston logger in our Node.js applications. By using the advanced Node Logger, we can easily log messages to the console, file, or other destinations, making it easier to debug and monitor our applications.
+
+Now, you can use the advanced Node Logger to log messages in your Node.js applications and make it easier to debug and monitor your applications.
