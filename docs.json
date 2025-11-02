@@ -56,7 +56,8 @@
           {
             "group": "Quick Guides",
             "pages": [
-              "tech-shots/yaml-complete"
+              "tech-shots/yaml-complete",
+              "tech-shots/docker-fullstack-production"
             ]
           }
         ]

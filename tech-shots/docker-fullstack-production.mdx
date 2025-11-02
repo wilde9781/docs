@@ -1,0 +1,874 @@
+---
+title: "Docker and Fullstack in Production"
+description: "Complete guide to building and deploying a fullstack application with Docker, from development to production"
+icon: "docker"
+---
+
+# Fullstack Docker Application - Complete Build Guide
+
+<Note>
+*This guide walks you through building a fullstack application from scratch with Express backend, React frontend, and Docker containerization - ready for production deployment.*
+</Note>
+
+## Table of Contents
+
+<CardGroup cols={2}>
+  <Card title="Backend Setup" icon="server" href="#backend-setup-expressjs">
+    Express.js server configuration
+  </Card>
+  <Card title="Frontend Setup" icon="react" href="#frontend-setup-vite--react">
+    Vite + React application
+  </Card>
+  <Card title="CORS & Proxy" icon="shield-halved" href="#understanding-cors-and-vite-proxy">
+    Understanding cross-origin requests
+  </Card>
+  <Card title="Docker Backend" icon="box" href="#dockerizing-the-backend">
+    Containerizing Express server
+  </Card>
+  <Card title="Docker Frontend" icon="boxes-stacked" href="#dockerizing-the-frontend">
+    Multi-stage build for React
+  </Card>
+  <Card title="Docker Compose" icon="layer-group" href="#docker-compose-setup">
+    Orchestrating full stack
+  </Card>
+</CardGroup>
+
+---
+
+## Backend Setup (Express.js)
+
+### Initialize Node.js Project
+
+Create a new directory for the backend:
+
+```bash
+mkdir server
+cd server
+npm init -y
+```
+
+### Install Dependencies
+
+Install Express and CORS:
+
+```bash
+npm install express cors
+```
+
+### Configure package.json
+
+Update `package.json` to use ES modules:
+
+```json
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
+```
+
+<Tip>
+**Key Points:**
+- `"type": "module"` enables ES6 import/export syntax
+- `"start"` script runs the server
+</Tip>
+
+### Create Express Server
+
+Create `index.js`:
+
+```javascript
+import express from "express";
+import cors from "cors";
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+
+// API Routes
+app.get("/api/message", (req, res) => {
+  res.json({ message: "Hello from chaicode" });
+});
+
+// Start Server
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+```
+
+### Test the Backend
+
+Run the server:
+
+```bash
+npm start
+```
+
+Test the API:
+
+```bash
+curl http://localhost:4000/api/message
+```
+
+Expected response:
+```json
+{"message":"Hello from chaicode"}
+```
+
+---
+
+## Frontend Setup (Vite + React)
+
+### Initialize Vite Project
+
+Create a new directory and initialize Vite with React:
+
+```bash
+cd ..
+mkdir client
+cd client
+npm create vite@latest . -- --template react
+npm install
+```
+
+### Create API-Fetching Component
+
+Update `src/App.jsx`:
+
+```javascript
+import { useState, useEffect } from "react";
+import "./App.css";
+
+function App() {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/message")
+      .then((res) => res.json())
+      .then((data) => setMessage(data.message))
+      .catch((err) => {
+        console.error("Error fetching message:", err);
+        setMessage("Failed to load message");
+      });
+  }, []);
+
+  return (
+    <>
+      <h1>ChaiCode frontend</h1>
+      <p>{message}</p>
+    </>
+  );
+}
+
+export default App;
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+The app will run on `http://localhost:5173` (default Vite port).
+
+<Warning>
+**CORS Error Incoming!** At this point, you'll likely see a CORS error because:
+- Frontend runs on `http://localhost:5173`
+- Backend runs on `http://localhost:4000`
+- Different ports trigger CORS policy
+</Warning>
+
+---
+
+## Understanding CORS and Vite Proxy
+
+### What is CORS?
+
+**Cross-Origin Resource Sharing (CORS)** is a browser security feature that blocks requests between different origins (different protocol, domain, or port).
+
+<AccordionGroup>
+  <Accordion title="Option A: Vite Proxy (Development Only)" icon="laptop-code">
+    Vite can proxy API requests during development, making them appear to come from the same origin.
+
+    **Advantages:**
+    - No CORS issues in development
+    - Simple relative URLs
+    - Works seamlessly with Vite dev server
+
+    **Limitations:**
+    - Only works during development (`npm run dev`)
+    - Not available in production build
+  </Accordion>
+
+  <Accordion title="Option B: Backend CORS Configuration (Production)" icon="server">
+    Configure the backend to allow requests from specific origins.
+
+    **Advantages:**
+    - Works in production
+    - Proper security configuration
+    - Full control over allowed origins
+
+    **Required for:**
+    - Production builds
+    - Direct API calls from browsers
+    - Different deployment scenarios
+  </Accordion>
+</AccordionGroup>
+
+### Vite Proxy Setup
+
+Update `vite.config.js`:
+
+```javascript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+});
+```
+
+**How it works:**
+- Requests to `/api/*` from the frontend are proxied to `http://localhost:4000`
+- Browser sees requests as same-origin (`localhost:5173`)
+- No CORS issues during development
+
+### Update Frontend Code (With Proxy)
+
+With proxy enabled, update `App.jsx`:
+
+```javascript
+// Use relative path - Vite proxy handles the rest
+fetch("/api/message")
+  .then((res) => res.json())
+  .then((data) => setMessage(data.message));
+```
+
+---
+
+## Fixing CORS on Backend
+
+### Why Backend CORS is Necessary
+
+Even with Vite proxy for development, you need backend CORS configuration for:
+
+<CardGroup cols={3}>
+  <Card icon="rocket">
+    **Production builds**
+    Static files served separately
+  </Card>
+  <Card icon="globe">
+    **Direct API calls**
+    From browsers without proxy
+  </Card>
+  <Card icon="cloud">
+    **Deployment scenarios**
+    Different hosting configurations
+  </Card>
+</CardGroup>
+
+### Configure Specific Origins
+
+For better security, specify allowed origins:
+
+```javascript
+import express from "express";
+import cors from "cors";
+
+const app = express();
+
+// CORS Configuration
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Vite dev server (default port)
+      "http://localhost:5174", // Alternative Vite port
+      "http://localhost:3000", // Production build port
+      // Add production URLs when deployed
+      // "http://yourdomain.com",
+    ],
+    credentials: true, // Allow cookies/auth headers
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.get("/api/message", (req, res) => {
+  res.json({ message: "Hello from chaicode" });
+});
+
+app.listen(4000, () => {
+  console.log("Server is running on port 4000");
+});
+```
+
+<Tip>
+**CORS Options:**
+- `origin`: Array of allowed origins
+- `credentials`: Allow cookies/authentication headers
+- `methods`: HTTP methods allowed
+- `allowedHeaders`: Headers the client can send
+</Tip>
+
+### Dynamic CORS with Environment Variables
+
+For flexibility across environments:
+
+```javascript
+import express from "express";
+import cors from "cors";
+
+const app = express();
+
+// Get allowed origins from environment or use defaults
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:3000",
+    ];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.get("/api/message", (req, res) => {
+  res.json({ message: "Hello from chaicode" });
+});
+
+app.listen(4000, () => {
+  console.log("Server is running on port 4000");
+});
+```
+
+---
+
+## Dockerizing the Backend
+
+### Create Backend Dockerfile
+
+Create `server/Dockerfile`:
+
+```dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 4000
+
+# Start server
+CMD ["npm", "start"]
+```
+
+<AccordionGroup>
+  <Accordion title="Dockerfile Explanation" icon="circle-info">
+    - **FROM node:22-alpine**: Lightweight Node.js image
+    - **WORKDIR /app**: Set working directory
+    - Copy `package*.json` first for better Docker layer caching
+    - **EXPOSE 4000**: Document the port (doesn't actually publish it)
+    - **CMD**: Command to run when container starts
+  </Accordion>
+</AccordionGroup>
+
+### Important: Bind to 0.0.0.0
+
+Update `server/index.js` to bind to all interfaces:
+
+```javascript
+// IMPORTANT: Bind to 0.0.0.0 for Docker
+app.listen(4000, "0.0.0.0", () => {
+  console.log("Server is running on port 4000");
+});
+```
+
+<Warning>
+**Why 0.0.0.0?**
+- Default `localhost` binding only accepts connections from within the container
+- `0.0.0.0` accepts connections from outside the container
+- Essential for Docker port mapping
+</Warning>
+
+### Create .dockerignore
+
+Create `server/.dockerignore`:
+
+```
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+```
+
+This prevents unnecessary files from being copied into the Docker image.
+
+### Build and Test Backend Docker Image
+
+```bash
+cd server
+docker build -t express-server .
+docker run -p 4000:4000 express-server
+```
+
+Test:
+```bash
+curl http://localhost:4000/api/message
+```
+
+---
+
+## Dockerizing the Frontend
+
+### Create Frontend Dockerfile (Multi-stage Build)
+
+Create `client/Dockerfile`:
+
+```dockerfile
+# Build stage
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci || npm install
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install serve (static file server)
+RUN npm i -g serve
+
+# Copy built files from build stage
+COPY --from=build /app/dist ./dist
+
+# Expose port
+EXPOSE 3000
+
+# Start server
+CMD ["serve", "-s", "dist", "-l", "3000"]
+```
+
+<Note>
+**Multi-stage Build Benefits:**
+- **Build stage**: Compiles React app with all dev dependencies
+- **Production stage**: Serves static files with minimal dependencies
+- **Result**: Significantly smaller final image size
+</Note>
+
+### Create .dockerignore for Frontend
+
+Create `client/.dockerignore`:
+
+```
+node_modules
+dist
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+```
+
+### Build and Test Frontend Docker Image
+
+```bash
+cd client
+docker build -t react-client .
+docker run -p 5174:3000 react-client
+```
+
+<Tip>
+**Note:** Map host port `5174` to container port `3000`
+</Tip>
+
+Test: Open `http://localhost:5174` in browser
+
+### Update Frontend for Production
+
+For production, update `src/App.jsx` to use environment variables:
+
+```javascript
+import { useState, useEffect } from "react";
+import "./App.css";
+
+function App() {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    // Use environment variable or fallback
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+    fetch(`${apiUrl}/api/message`)
+      .then((res) => res.json())
+      .then((data) => setMessage(data.message))
+      .catch((err) => {
+        console.error("Error fetching message:", err);
+        setMessage("Failed to load message");
+      });
+  }, []);
+
+  return (
+    <>
+      <h1>ChaiCode frontend</h1>
+      <p>{message}</p>
+    </>
+  );
+}
+
+export default App;
+```
+
+Create `.env.production`:
+
+```
+VITE_API_URL=http://localhost:4000
+```
+
+---
+
+## Docker Compose Setup
+
+### Create docker-compose.yml
+
+Create `docker-compose.yml` in the project root:
+
+```yaml
+version: "3.9"
+
+services:
+  server:
+    build: ./server
+    container_name: express-server
+    ports:
+      - "4000:4000"
+    networks:
+      - fullstack-net
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    container_name: react-client
+    ports:
+      - "5174:3000"
+    networks:
+      - fullstack-net
+    depends_on:
+      - server
+    restart: unless-stopped
+
+networks:
+  fullstack-net:
+    driver: bridge
+```
+
+### Understanding Docker Compose Configuration
+
+<AccordionGroup>
+  <Accordion title="Server Service" icon="server">
+    - `build: ./server`: Build context for server Dockerfile
+    - `container_name`: Custom container name
+    - `ports: "4000:4000"`: Map host port 4000 to container port 4000
+    - `networks`: Assign to custom network
+    - `restart`: Auto-restart policy
+  </Accordion>
+
+  <Accordion title="Client Service" icon="browser">
+    - `build: ./client`: Build context for client Dockerfile
+    - `ports: "5174:3000"`: Map host port 5174 to container port 3000
+    - `depends_on`: Wait for server to start first
+    - `networks`: Same network as server for communication
+  </Accordion>
+
+  <Accordion title="Networks" icon="network-wired">
+    - `fullstack-net`: Custom bridge network
+    - Allows containers to communicate by service name
+    - Provides isolation from other Docker networks
+  </Accordion>
+</AccordionGroup>
+
+### Important Networking Concepts
+
+<CardGroup cols={2}>
+  <Card title="Container-to-Container" icon="link">
+    Within Docker network, containers can communicate using service names:
+
+    ```javascript
+    // From within a container on the same network:
+    fetch("http://server:4000/api/message") // Works!
+    ```
+  </Card>
+
+  <Card title="Browser-to-Container" icon="globe">
+    Browsers **cannot** use Docker service names. They must use:
+
+    ```javascript
+    // From browser - MUST use localhost or public IP
+    fetch("http://localhost:4000/api/message") // ✅ Works
+    fetch("http://server:4000/api/message")    // ❌ Fails
+    ```
+  </Card>
+</CardGroup>
+
+### Run with Docker Compose
+
+```bash
+# Build and start all services
+docker-compose up --build
+
+# Run in detached mode
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+```
+
+### Update CORS for Production Deployment
+
+When deploying to a server with a public IP, update backend CORS:
+
+```javascript
+const allowedOrigins = [
+  "http://localhost:5174",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://YOUR_PUBLIC_IP:5174", // Add your production IP
+  // Or use environment variable:
+  // ...(process.env.ALLOWED_ORIGINS?.split(",") || []),
+];
+```
+
+### Production Considerations
+
+#### Environment Variables
+
+Create `.env` for Docker Compose:
+
+```env
+ALLOWED_ORIGINS=http://localhost:5174,http://YOUR_PUBLIC_IP:5174
+```
+
+Update `docker-compose.yml` to use env vars:
+
+```yaml
+services:
+  server:
+    build: ./server
+    environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+    # ... rest of config
+```
+
+#### Health Checks
+
+Add health checks to ensure services are ready:
+
+```yaml
+services:
+  server:
+    # ... other config
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/api/message"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  client:
+    # ... other config
+    depends_on:
+      server:
+        condition: service_healthy
+```
+
+---
+
+## Complete File Structure
+
+```
+fullstack-docker/
+├── server/
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── package.json
+│   ├── package-lock.json
+│   └── index.js
+├── client/
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.js
+│   ├── index.html
+│   └── src/
+│       ├── App.jsx
+│       └── main.jsx
+└── docker-compose.yml
+```
+
+---
+
+## Common Issues and Solutions
+
+<AccordionGroup>
+  <Accordion title="Issue 1: CORS Error in Browser" icon="shield-halved">
+    **Problem:** Browser blocks API requests from different origin.
+
+    **Solution:**
+    - Configure CORS on backend with correct origins
+    - Ensure production IP/domain is in allowed origins list
+  </Accordion>
+
+  <Accordion title="Issue 2: Can't Access Container from Browser" icon="circle-xmark">
+    **Problem:** Container running but can't access on `localhost`.
+
+    **Solutions:**
+    - Ensure Express binds to `0.0.0.0` (not `localhost`)
+    - Check port mappings in docker-compose.yml
+    - Verify firewall settings
+  </Accordion>
+
+  <Accordion title="Issue 3: Container-to-Container Communication Not Working" icon="link-slash">
+    **Problem:** Services can't communicate using service names.
+
+    **Solution:**
+    - Ensure both services are on the same network
+    - Use service names (not `localhost`) within containers
+    - Check network configuration in docker-compose.yml
+  </Accordion>
+
+  <Accordion title="Issue 4: Frontend Can't Connect to Backend" icon="plug-circle-xmark">
+    **Problem:** Frontend build can't reach backend API.
+
+    **Solutions:**
+    - Use environment variables for API URL
+    - Update CORS to include production origins
+    - Verify backend is accessible from browser (not just containers)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Backend development
+cd server
+npm install
+npm start
+
+# Frontend development
+cd client
+npm install
+npm run dev
+
+# Docker backend
+cd server
+docker build -t express-server .
+docker run -p 4000:4000 express-server
+
+# Docker frontend
+cd client
+docker build -t react-client .
+docker run -p 5174:3000 react-client
+
+# Docker Compose
+docker-compose up --build
+docker-compose down
+docker-compose logs -f
+docker-compose ps
+```
+
+---
+
+## Summary
+
+This guide covered:
+
+<CardGroup cols={2}>
+  <Card icon="check" title="Express Backend">
+    Setup with CORS configuration
+  </Card>
+  <Card icon="check" title="React Frontend">
+    Vite setup with API integration
+  </Card>
+  <Card icon="check" title="CORS & Proxy">
+    Development and production strategies
+  </Card>
+  <Card icon="check" title="Docker Backend">
+    Containerization best practices
+  </Card>
+  <Card icon="check" title="Docker Frontend">
+    Multi-stage builds
+  </Card>
+  <Card icon="check" title="Docker Compose">
+    Full-stack orchestration
+  </Card>
+</CardGroup>
+
+### Key Takeaways
+
+<Note>
+- CORS is essential for browser-based API calls
+- Vite proxy helps in development but production needs backend CORS
+- Docker requires binding to `0.0.0.0` for external access
+- Service names work for container-to-container communication
+- Browsers need `localhost` or public IPs, not Docker service names
+</Note>
+
+---
+
+**Happy Coding! 🚀**
